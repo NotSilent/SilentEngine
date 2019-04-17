@@ -7,9 +7,6 @@
 void APIENTRY
 glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message,
               const void *userParam) {
-    // ignore non-significant error/warning codes
-    if (id == 131169 || id == 131185 || id == 131218 || id == 131204) return;
-
     std::cout << "---------------" << std::endl;
     std::cout << "Debug message (" << id << "): " << message << std::endl;
 
@@ -31,6 +28,9 @@ glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei le
             break;
         case GL_DEBUG_SOURCE_OTHER:
             std::cout << "Source: Other";
+            break;
+        default:
+            std::cout << "Source: Unknown";
             break;
     }
     std::cout << std::endl;
@@ -63,24 +63,29 @@ glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei le
         case GL_DEBUG_TYPE_OTHER:
             std::cout << "Type: Other";
             break;
+        default:
+            std::cout << "Type: Unknown";
+            break;
     }
     std::cout << std::endl;
 
     switch (severity) {
         case GL_DEBUG_SEVERITY_HIGH:
-            std::cout << "Severity: high";
+            std::cout << "Severity: high\n";
             break;
         case GL_DEBUG_SEVERITY_MEDIUM:
-            std::cout << "Severity: medium";
+            std::cout << "Severity: medium\n";
             break;
         case GL_DEBUG_SEVERITY_LOW:
-            std::cout << "Severity: low";
+            std::cout << "Severity: low\n";
             break;
         case GL_DEBUG_SEVERITY_NOTIFICATION:
-            std::cout << "Severity: notification";
+            std::cout << "Severity: notification\n";
+            break;
+        default:
+            std::cout << "Severity: Unknown\n";
             break;
     }
-    std::cout << std::endl;
     std::cout << std::endl;
 }
 
@@ -108,15 +113,24 @@ Engine::Engine(const char *name, const int width, const int height) {
 
     glViewport(0, 0, width, height);
 
+    glCullFace(GL_TRUE);
+    glFrontFace(GL_CCW);
+
     glfwSetFramebufferSizeCallback(m_window, onWindowResize);
 
-    std::vector<float> vertices{
+    std::vector<float> vertices = {
             -0.5f, -0.5f, 0.0f,
             0.5f, -0.5f, 0.0f,
-            0.0f, 0.5f, 0.0f
+            0.5f, 0.5f, 0.0f,
+            -0.5f, 0.5f, 0.0f
     };
 
-    m_meshes.emplace_back(Mesh{vertices});
+    std::vector<unsigned int> indices = {
+            0, 2, 3,
+            0, 1, 2
+    };
+
+    m_meshes.emplace_back(Mesh{vertices, indices});
 
     GLint flags;
     glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
@@ -139,13 +153,13 @@ Engine::~Engine() {
 void Engine::update() {
     while (!glfwWindowShouldClose(m_window)) {
         processInput(m_window);
-        draw(0.0f);
+        draw();
         glfwSwapBuffers(m_window);
         glfwPollEvents();
     }
 }
 
-void Engine::draw(float dt) const {
+void Engine::draw() const {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 

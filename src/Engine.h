@@ -19,7 +19,7 @@ private:
 
     std::vector<Mesh> m_meshes;
 
-    void draw(float dt) const;
+    void draw() const;
 
     void processInput(GLFWwindow *window);
 

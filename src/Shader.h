@@ -26,8 +26,12 @@ public:
     }
 
 private:
+    bool m_manages;
+
     GLuint m_id;
     std::string m_name;
 
     static std::unordered_map<std::string, Shader> shaders;
+
+    void move(Shader &other);
 };

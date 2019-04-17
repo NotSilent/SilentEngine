@@ -1,11 +1,12 @@
 #include "Shader.h"
 #include <iostream>
 
-Shader::Shader() : m_id(0), m_name("") {
+Shader::Shader() : m_manages(true), m_id(0), m_name("") {
 
 }
 
-Shader::Shader(const std::string &&name, const std::string &vertexSource, const std::string &fragmentSource) {
+Shader::Shader(const std::string &&name, const std::string &vertexSource, const std::string &fragmentSource)
+        : m_manages(true) {
     const auto vertex = glCreateShader(GL_VERTEX_SHADER);
     const auto fragment = glCreateShader(GL_FRAGMENT_SHADER);
 
@@ -49,22 +50,28 @@ Shader::Shader(const std::string &&name, const std::string &vertexSource, const 
     glDeleteShader(fragment);
 }
 
-Shader::~Shader() {
-    //glDeleteProgram(m_id);
-}
-
-Shader &Shader::operator=(Shader &&other) noexcept {
+void Shader::move(Shader &other) {
     if (this != &other) {
+        m_manages = true;
+        other.m_manages = false;
+
         m_id = other.m_id;
         m_name = std::move(other.m_name);
     }
+}
+
+Shader &Shader::operator=(Shader &&other) noexcept {
+    move(other);
 
     return *this;
 }
 
 Shader::Shader(Shader &&other) noexcept {
-    if (this != &other) {
-        m_id = other.m_id;
-        m_name = std::move(other.m_name);
+    move(other);
+}
+
+Shader::~Shader() {
+    if (m_manages) {
+        glDeleteProgram(m_id);
     }
 }
