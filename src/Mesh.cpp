@@ -21,7 +21,7 @@ Mesh::Mesh(std::vector<float> &vertices, std::vector<unsigned int> &indices) : m
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    m_shader = Shader{"", vertexShaderSource, fragmentShaderSource};
+    m_shader = Shader::getId("Unlit");
 }
 
 void Mesh::move(Mesh &other) {
@@ -57,7 +57,7 @@ Mesh::~Mesh() {
 }
 
 void Mesh::draw() const {
-    glUseProgram(m_shader.getId());
+    glUseProgram(m_shader);
     glBindVertexArray(m_vao);
     glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, nullptr);
 }

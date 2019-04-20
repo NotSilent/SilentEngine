@@ -4,12 +4,13 @@
 #include <string>
 #include <unordered_map>
 #include <glad/glad.h>
+#include <fstream>
 
 class Shader {
-public:
-    Shader();
+    using Shaders = std::unordered_map<std::string, Shader>;
 
-    Shader(const std::string &&name, const std::string &vertexSource, const std::string &fragmentSource);
+public:
+    explicit Shader(const std::string &name);
 
     Shader(const Shader &other) = delete;
 
@@ -21,17 +22,19 @@ public:
 
     ~Shader();
 
+    static GLuint getId(const std::string &name);
+
+    bool m_manages;
+
+    GLuint m_id;
+
+    static Shaders m_shaders;
+
     inline GLuint getId() const {
         return m_id;
     }
 
-private:
-    bool m_manages;
-
-    GLuint m_id;
-    std::string m_name;
-
-    static std::unordered_map<std::string, Shader> shaders;
+    std::string getSource(std::ifstream &stream, std::string &&name);
 
     void move(Shader &other);
 };

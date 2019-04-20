@@ -1,37 +1,23 @@
 #include "Shader.h"
 #include <iostream>
+#include <sstream>
 
-Shader::Shader() : m_manages(true), m_id(0), m_name("") {
+Shader::Shaders Shader::m_shaders = Shader::Shaders{};
 
-}
-
-Shader::Shader(const std::string &&name, const std::string &vertexSource, const std::string &fragmentSource)
-        : m_manages(true) {
+Shader::Shader(const std::string &name) : m_manages(true) {
     const auto vertex = glCreateShader(GL_VERTEX_SHADER);
     const auto fragment = glCreateShader(GL_FRAGMENT_SHADER);
 
-    auto rawSource = vertexSource.c_str();
+    std::ifstream stream;
+    auto a = getSource(stream, name + ".vert");
+    auto rawSource = a.c_str();
     glShaderSource(vertex, 1, &rawSource, nullptr);
     glCompileShader(vertex);
-    // check for shader compile errors
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
 
-    rawSource = fragmentSource.c_str();
+    a = getSource(stream, name + ".frag");
+    rawSource = a.c_str();
     glShaderSource(fragment, 1, &rawSource, nullptr);
     glCompileShader(fragment);
-
-    // check for shader compile errors
-    glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(fragment, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
 
     m_id = glCreateProgram();
 
@@ -39,12 +25,6 @@ Shader::Shader(const std::string &&name, const std::string &vertexSource, const 
     glAttachShader(m_id, fragment);
 
     glLinkProgram(m_id);
-
-    glGetProgramiv(m_id, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(m_id, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
 
     glDeleteShader(vertex);
     glDeleteShader(fragment);
@@ -56,7 +36,6 @@ void Shader::move(Shader &other) {
         other.m_manages = false;
 
         m_id = other.m_id;
-        m_name = std::move(other.m_name);
     }
 }
 
@@ -74,4 +53,36 @@ Shader::~Shader() {
     if (m_manages) {
         glDeleteProgram(m_id);
     }
+}
+
+GLuint Shader::getId(const std::string &name) {
+    const auto shaderIterator = m_shaders.find(name);
+
+    if (shaderIterator == m_shaders.end()) {
+        Shader shader{name};
+
+        GLuint id = shader.m_id;
+
+        auto a = m_shaders.emplace(name, std::move(shader));
+
+        return id;
+    }
+
+    return shaderIterator->second.m_id;
+}
+
+std::string Shader::getSource(std::ifstream &stream, std::string &&name) {
+    stream.open("../shaders/" + name);
+
+    if (!stream.is_open()) {
+        throw std::runtime_error("Couldn't open shader file: " + name);
+    }
+
+    std::stringstream source;
+    source << stream.rdbuf();
+
+    stream.close();
+
+    std::string raw = source.str();
+    return raw;
 }
