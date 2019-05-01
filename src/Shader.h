@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
-#include <glad/glad.h>
+#include "glad/glad.h"
 #include <fstream>
 
 class Shader {

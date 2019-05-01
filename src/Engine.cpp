@@ -1,4 +1,7 @@
 #include <iostream>
+#include <glm/mat4x4.hpp>
+#include <glm/trigonometric.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "Engine.h"
 
@@ -132,14 +135,7 @@ Engine::Engine(const char *name, const int width, const int height) {
 
     m_meshes.emplace_back(Mesh{vertices, indices});
 
-    GLint flags;
-    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
-        glEnable(GL_DEBUG_OUTPUT);
-        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        glDebugMessageCallback(glDebugOutput, nullptr);
-        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-    }
+    glm::mat4 proj = glm::perspective(glm::radians(90.0f), (float) width / (float) height, 0.0001f, 1000.0f);
 }
 
 Engine::~Engine() {

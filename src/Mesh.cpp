@@ -2,7 +2,8 @@
 
 Mesh::Mesh(std::vector<float> &vertices, std::vector<unsigned int> &indices) : m_manages(true), m_vao(0), m_vbo(0),
                                                                                m_ebo(0), m_vertices(vertices),
-                                                                               m_indices(indices) {
+                                                                               m_indices(indices),
+                                                                               position(glm::mat4(1.0f)) {
     glGenVertexArrays(1, &m_vao);
     glBindVertexArray(m_vao);
 

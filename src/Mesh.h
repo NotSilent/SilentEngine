@@ -1,7 +1,8 @@
 #pragma once
 
 #include <vector>
-#include <glad/glad.h>
+#include "glad/glad.h"
+#include <glm/mat4x4.hpp>
 
 #include "Shader.h"
 
@@ -33,6 +34,8 @@ private:
     GLuint m_ebo;
 
     GLuint m_shader;
+
+    glm::mat4 position;
 
     void move(Mesh &other);
 };
