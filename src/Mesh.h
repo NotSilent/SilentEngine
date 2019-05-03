@@ -35,7 +35,5 @@ private:
 
     GLuint m_shader;
 
-    glm::mat4 position;
-
     void move(Mesh &other);
 };
