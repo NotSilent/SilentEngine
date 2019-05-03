@@ -1,22 +1,26 @@
 #include "Mesh.h"
+#include "Vertex.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
-Mesh::Mesh(std::vector<float> &vertices, std::vector<unsigned int> &indices) : m_manages(true), m_vao(0), m_vbo(0),
+Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<unsigned int> &indices) : m_manages(true), m_vao(0), m_vbo(0),
                                                                                m_ebo(0), m_vertices(vertices),
-                                                                               m_indices(indices)) {
+                                                                               m_indices(indices) {
     glGenVertexArrays(1, &m_vao);
     glBindVertexArray(m_vao);
 
+    auto a = sizeof(Vertex);
+    auto b = sizeof(float) * 3;
+
     glGenBuffers(1, &m_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_vertices.size(), m_vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_vertices.size(), m_vertices.data(), GL_STATIC_DRAW);
 
     glGenBuffers(1, &m_ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * m_indices.size(), m_indices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
     glEnableVertexAttribArray(0);
 
     glBindVertexArray(0);
@@ -60,17 +64,10 @@ Mesh::~Mesh() {
     }
 }
 
-void Mesh::draw() const {
+void Mesh::draw(const glm::mat4& view, const glm::mat4& projection) const {
     glUseProgram(m_shader);
 
-
     glm::mat4 model = glm::mat4(1.0f);
-
-    glm::mat4 view = glm::mat4(1.0f);
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-
-    glm::mat4 projection;
-    projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 
     int modelLoc = glGetUniformLocation(m_shader, "model");
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));

@@ -6,6 +6,8 @@
 #include "Engine.h"
 
 #include "Mesh.h"
+#include "Vertex.h"
+#include "WorldGenerator.h"
 
 void APIENTRY
 glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message,
@@ -92,7 +94,7 @@ glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei le
     std::cout << std::endl;
 }
 
-Engine::Engine(const char *name, const int width, const int height) {
+Engine::Engine(const char *name, const int width, const int height) : m_camera(width / height){
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
@@ -116,26 +118,14 @@ Engine::Engine(const char *name, const int width, const int height) {
 
     glViewport(0, 0, width, height);
 
-    glCullFace(GL_TRUE);
+    glCullFace(GL_FALSE);
     glFrontFace(GL_CCW);
 
     glfwSetFramebufferSizeCallback(m_window, onWindowResize);
 
-    std::vector<float> vertices = {
-            -0.5f, -0.5f, 0.0f,
-            0.5f, -0.5f, 0.0f,
-            0.5f, 0.5f, 0.0f,
-            -0.5f, 0.5f, 0.0f
-    };
+    auto world = WorldGenerator::getWorld();
 
-    std::vector<unsigned int> indices = {
-            0, 2, 3,
-            0, 1, 2
-    };
-
-    m_meshes.emplace_back(Mesh{vertices, indices});
-
-    glm::mat4 proj = glm::perspective(glm::radians(90.0f), (float) width / (float) height, 0.0001f, 1000.0f);
+    m_meshes.emplace_back(Mesh{world.first, world.second});
 }
 
 Engine::~Engine() {
@@ -160,7 +150,7 @@ void Engine::draw() const {
     glClear(GL_COLOR_BUFFER_BIT);
 
     for (const auto &mesh : m_meshes) {
-        mesh.draw();
+        mesh.draw(m_camera.getView(), m_camera.getProjection());
     }
 }
 
@@ -171,4 +161,6 @@ void Engine::processInput(GLFWwindow *window) {
 
 void Engine::onWindowResize(GLFWwindow *window, int width, int height) {
     glViewport(0, 0, width, height);
+
+    //m_camera.changeAspectRation(static_cast<float>(width) / height);
 }

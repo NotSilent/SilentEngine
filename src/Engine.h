@@ -5,10 +5,15 @@
 
 #include <vector>
 #include "Mesh.h"
+#include "Camera.h"
 
 class Engine {
 public:
     Engine(const char *name, int width, int height);
+    Engine(const Engine& other) = delete;
+    Engine& operator=(const Engine& other) = delete;
+    Engine(Engine&& other) = delete;
+    Engine& operator=(Engine&& other) = delete;
 
     ~Engine();
 
@@ -18,6 +23,8 @@ private:
     GLFWwindow *m_window;
 
     std::vector<Mesh> m_meshes;
+
+    Camera m_camera;
 
     void draw() const;
 
